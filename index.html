@@ -1,15 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMTIXON</title>
-    <script src="./script.js"></script>
+    <script src="./script.js" defer></script>
     <link rel="stylesheet" href="./style.css">
 </head>
-<body>
 
-    <h1>👤Random Users</h1>
+<body>
+    <h1 class="top-text">👤Random Users</h1>
+    <main class="container">
+        <div class="container-top">
+            <input type="text" id="searchInput" placeholder="Search by name...">
+    
+            <select id="genderFilter" name="gender">
+                <option value="all">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+    
+        </div>
+        <div class="cards" id="userCards"></div>
+            <button class="button-71" role="button" id="loadMoreBtn">Load More</button>
+    </main>
+
+
+    <section class="save-card">
+        
+    </section>
     
 </body>
+
 </html>
