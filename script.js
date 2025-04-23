@@ -72,7 +72,7 @@ genderFilter.addEventListener("change", () => {
 });
 
 searchInput.addEventListener("input", () => {
-  const query = searchInput.value.toLowerCase();
+  const query = searchInput.value.toLowerCase().trim();
   const filtered = allUsers.filter(user => 
     user.name.first.toLowerCase().includes(query) || 
     user.name.last.toLowerCase().includes(query)
