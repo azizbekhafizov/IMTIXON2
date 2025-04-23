@@ -8,102 +8,84 @@ let allUsers = [];
 let currentResults = 0;
 let savedUsers = JSON.parse(localStorage.getItem("savedUsers")) || [];
 
-function getUsers() {
-  fetch("https://randomuser.me/api/?results=10")
-    .then(res => res.json())
-    .then(data => {
-      let newUsers = data.results;
-      allUsers = allUsers.concat(newUsers);
-      showUsers(allUsers.slice(0, currentResults + 10));
-      currentResults += 10;
-    })
-    .catch(err => console.log("Xatolik:", err));
+function fetchUsers() {
+    fetch("https://randomuser.me/api/?results=10")
+      .then(res => res.json())
+      .then(data => {
+        allUsers = [...allUsers, ...data.results];
+        cards(allUsers.slice(0, currentResults + 10));
+        currentResults += 10;
+      })
+      .catch(error => {
+        console.error("error:", error);
+      });
 }
 
-function showUsers(users) {
+function cards(users) {
   userCards.innerHTML = "";
   users.forEach(user => {
-    let card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <img src="${user.picture.large}">
-      <h3>${user.name.first}</h3>
-      <p>${user.email}</p>
-      <p>${user.gender}, ${user.location.country}</p>
-      <button class="save-btn">Saqlash</button>
+    userCards.innerHTML += `
+      <div class="card">
+        <img src="${user.picture.large}" alt="User Image">
+        <h3>${user.name.first}</h3>
+        <p>${user.email}</p>
+        <p>${user.gender}, ${user.location.country}</p>
+        <button class="save-btn" data-user='${JSON.stringify(user)}'>Save</button>
+      </div>
     `;
-    let saveBtn = card.querySelector(".save-btn");
-    saveBtn.addEventListener("click", () => saveUser(user));
-    userCards.appendChild(card);
+  });
+
+  const saveButtons = document.querySelectorAll(".save-btn");
+  saveButtons.forEach(button => {
+    button.addEventListener("click", (e) => {
+      const user = JSON.parse(e.target.getAttribute('data-user'));
+      saveUser(user);
+    });
   });
 }
 
-// Foydalanuvchini saqlash
 function saveUser(user) {
-  let isSaved = false;
-
-  for (let i = 0; i < savedUsers.length; i++) {
-    if (savedUsers[i].email === user.email) {
-      isSaved = true;
-      break;
-    }
-  }
-
-  if (!isSaved) {
+  if (!savedUsers.some(savedUser => savedUser.email === user.email)) {
     savedUsers.push(user);
     localStorage.setItem("savedUsers", JSON.stringify(savedUsers));
-    showSavedUser(user);
+    addSavedUserToSection(user);
   }
 }
 
-function showSavedUser(user) {
-  let card = document.createElement("div");
-  card.className = "card saved-user";
-  card.innerHTML = `
-    <img src="${user.picture.large}" alt="User Image">
-    <h3>${user.name.first}</h3>
-    <p>${user.email}</p>
-    <p>${user.gender}, ${user.location.country}</p>
+function addSavedUserToSection(user) {
+  saveCardSection.innerHTML += `
+        <div class="card saved-user">
+      <img src="${user.picture.large}" alt="User Image">
+      <h3>${user.name.first}</h3>
+      <p>${user.email}</p>
+      <p>${user.gender}, ${user.location.country}</p>
+    </div>
   `;
-  saveCardSection.appendChild(card);
 }
 
 genderFilter.addEventListener("change", () => {
-  let type = genderFilter.value;
-  let filteredUsers = [];
-
-  if (type === "all") {
-    filteredUsers = allUsers;
-  } else {
-    filteredUsers = allUsers.filter(user => user.gender === type);
-  }
-
-  showUsers(filteredUsers.slice(0, currentResults));
+  const value = genderFilter.value;
+  const filtered = value === "all" 
+    ? allUsers 
+    : allUsers.filter(user => user.gender === value);
+  cards(filtered.slice(0, currentResults));
 });
 
 searchInput.addEventListener("input", () => {
-  let value = searchInput.value.toLowerCase();
-  let filteredUsers = [];
-
-  for (let i = 0; i < allUsers.length; i++) {
-    let name = allUsers[i].name;
-    if (
-      name.first.toLowerCase().includes(value) ||
-      name.last.toLowerCase().includes(value)
-    ) {
-      filteredUsers.push(allUsers[i]);
-    }
-  }
-
-  showUsers(filteredUsers.slice(0, currentResults));
+  const query = searchInput.value.toLowerCase();
+  const filtered = allUsers.filter(user => 
+    user.name.first.toLowerCase().includes(query) || 
+    user.name.last.toLowerCase().includes(query)
+  );
+  cards(filtered.slice(0, currentResults));
 });
 
 loadMoreBtn.addEventListener("click", () => {
-  getUsers();
+  fetchUsers();
 });
 
-for (let i = 0; i < savedUsers.length; i++) {
-  showSavedUser(savedUsers[i]);
-}
+savedUsers.forEach(user => {
+  addSavedUserToSection(user);
+});
 
-getUsers();
+fetchUsers();
